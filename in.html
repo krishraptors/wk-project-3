@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Lens: Notion Collaboration Enhancement</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+        
+        /* Claudy-inspired animated background */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+        }
+        
+        .background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 115, 75, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(138, 43, 226, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(30, 144, 255, 0.08) 0%, transparent 50%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
+        
+        .background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='37' cy='37' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: float 30s linear infinite;
+        }
+        
+        @keyframes bgMove {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            25% { transform: translateX(-20px) translateY(-10px); }
+            50% { transform: translateX(10px) translateY(-20px); }
+            75% { transform: translateX(-10px) translateY(10px); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .slide {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 60px;
+            margin-bottom: 40px;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 32px 64px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: slideIn 0.8s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 115, 75, 0.8) 20%, 
+                rgba(138, 43, 226, 0.8) 50%, 
+                rgba(30, 144, 255, 0.8) 80%, 
+                transparent);
+        }
+        
+        .slide-number {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            text-align: center;
+            background: linear-gradient(135deg, #ff734f, #8a2be2, #1e90ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+            color: #ffffff;
+            position: relative;
+            padding-bottom: 16px;
+            letter-spacing: -0.01em;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #ff734f, #8a2be2);
+            border-radius: 2px;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 24px 0 16px 0;
+            color: #ffffff;
+        }
+        
+        .problem-box, .solution-box, .opportunity-box, .mvp-highlight, .metric-box {
+            padding: 32px;
+            border-radius: 16px;
+            margin: 24px 0;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .problem-box {
+            background: linear-gradient(135deg, rgba(255, 115, 75, 0.2), rgba(220, 38, 127, 0.2));
+        }
+        
+        .solution-box {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.2), rgba(138, 43, 226, 0.2));
+        }
+        
+        .opportunity-box {
+            background: linear-gradient(135deg, rgba(0, 255, 127, 0.2), rgba(30, 144, 255, 0.2));
+        }
+        
+        .mvp-highlight {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(30, 144, 255, 0.2));
+            text-align: center;
+        }
+        
+        .metric-box {
+            background: linear-gradient(135deg, rgba(0, 255, 127, 0.2), rgba(138, 43, 226, 0.2));
+            text-align: center;
+            font-size: 1.2em;
+        }
+        
+        .rice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .rice-table th {
+            background: linear-gradient(135deg, rgba(255, 115, 75, 0.3), rgba(138, 43, 226, 0.3));
+            color: #ffffff;
+            padding: 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .rice-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .rice-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .score-high { 
+            background: rgba(0, 255, 127, 0.2); 
+            color: #00ff7f; 
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .score-medium { 
+            background: rgba(255, 215, 0, 0.2); 
+            color: #ffd700; 
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .score-low { 
+            background: rgba(255, 115, 75, 0.2); 
+            color: #ff734f; 
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        
+        .framework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 32px 0;
+        }
+        
+        .framework-item {
+            padding: 32px;
+            border-radius: 16px;
+            text-align: center;
+            color: #ffffff;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .framework-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .must-have { background: linear-gradient(135deg, rgba(255, 115, 75, 0.3), rgba(220, 38, 127, 0.3)); }
+        .should-have { background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 140, 0, 0.3)); }
+        .could-have { background: linear-gradient(135deg, rgba(30, 144, 255, 0.3), rgba(138, 43, 226, 0.3)); }
+        .wont-have { background: linear-gradient(135deg, rgba(169, 169, 169, 0.3), rgba(105, 105, 105, 0.3)); }
+        
+        .kano-item {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(30, 144, 255, 0.2));
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            padding: 24px;
+            margin: 16px 0;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #8a2be2;
+        }
+        
+        .slide-content {
+            flex: 1;
+        }
+        
+        .intro-slide {
+            text-align: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.01);
+        }
+        
+        .logo {
+            font-size: 6rem;
+            margin-bottom: 32px;
+            filter: drop-shadow(0 0 20px rgba(255, 115, 75, 0.5));
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 48px;
+            font-weight: 400;
+        }
+        
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        li {
+            margin: 12px 0;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            border-left: 3px solid #8a2be2;
+            color: rgba(255, 255, 255, 0.9);
+            transition: background 0.3s ease;
+        }
+        
+        li:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 140, 0, 0.2));
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-left: 4px solid #ffd700;
+        }
+        
+        .submission-box {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(30, 144, 255, 0.3));
+            backdrop-filter: blur(10px);
+            color: #ffffff;
+            padding: 16px 24px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(138, 43, 226, 0.3);
+        }
+        
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin: 32px 0;
+        }
+        
+        .tech-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+            border-color: rgba(138, 43, 226, 0.3);
+        }
+        
+        .thank-you-section {
+            text-align: center;
+            padding: 60px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.2), rgba(30, 144, 255, 0.2));
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            color: #ffffff;
+            margin-top: 48px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .thank-you-section h1 {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            filter: drop-shadow(0 0 20px rgba(255, 115, 75, 0.5));
+        }
+        
+        .thank-you-section h2 {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: #ffffff;
+            border: none;
+            padding: 0;
+        }
+        
+        .thank-you-section h2::after {
+            display: none;
+        }
+        
+        .animated-icon {
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        p {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+        
+        strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 32px;
+                margin-bottom: 24px;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            .framework-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide intro-slide">
+            <div class="slide-number">1/9</div>
+            <div class="slide-content">
+                <div class="logo animated-icon">📊</div>
+                <h1>Product Lens Analysis</h1>
+                <p class="subtitle">Solving Real-Time Collaboration Challenges in Notion</p>
+                <div class="highlight">
+                    <strong>Product:</strong> Notion<br>
+                    <strong>Focus:</strong> Enhanced Real-Time Collaboration Experience
+                </div>
+                
+                <div class="submission-box" style="margin-top: 48px; display: inline-block;">
+                    📝 Submitted by: Krishnmohan Kumar
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Problem-Solution Fit -->
+        <div class="slide">
+            <div class="slide-number">2/9</div>
+            <div class="slide-content">
+                <h2>Problem-Solution Fit</h2>
+                
+                <div class="problem-box">
+                    <h3><span class="animated-icon">🚨</span> Problem Statement</h3>
+                    <p><strong>Notion's real-time collaboration experience creates confusion and inefficiency during simultaneous editing sessions.</strong></p>
+                    <br>
+                    <p>Key issues include:</p>
+                    <ul>
+                        <li>No live cursor tracking of collaborators</li>
+                        <li>Delayed sync causing conflicting edits</li>
+                        <li>No awareness of who's editing what section</li>
+                        <li>Difficult to coordinate during live meetings</li>
+                    </ul>
+                </div>
+
+                <div class="solution-box">
+                    <h3><span class="animated-icon">💡</span> Proposed Solution</h3>
+                    <p><strong>Enhanced Real-Time Collaboration Suite</strong></p>
+                    <p>A comprehensive set of features that transforms Notion into a truly collaborative workspace with live awareness, seamless coordination, and conflict-free editing.</p>
+                </div>
+
+                <div class="highlight">
+                    <strong>Why this matters:</strong> 73% of remote teams use collaborative documents daily, and poor collaboration tools reduce productivity by 25% (Microsoft Work Trend Index 2024)
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Opportunity Sizing -->
+        <div class="slide">
+            <div class="slide-number">3/9</div>
+            <div class="slide-content">
+                <h2>Opportunity Sizing</h2>
+                
+                <div class="opportunity-box">
+                    <h3><span class="animated-icon">📈</span> Bottom-Up Approach</h3>
+                    <div class="tech-grid" style="margin-top: 32px;">
+                        <div class="tech-card">
+                            <h4>Current Metrics:</h4>
+                            <ul>
+                                <li>Notion Users: ~30M active users</li>
+                                <li>Team Plans: ~40% of user base</li>
+                                <li>Average Team Size: 8 users</li>
+                                <li>Monthly Price: $8/user</li>
+                            </ul>
+                        </div>
+                        <div class="tech-card">
+                            <h4>Opportunity Calculation:</h4>
+                            <ul>
+                                <li>Team Users: 12M users</li>
+                                <li>Premium Feature Adoption: 60%</li>
+                                <li>Additional Revenue/User: $2/month</li>
+                                <li><strong>Annual Opportunity: $172.8M</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <h3><span class="animated-icon">🎯</span> Market Validation</h3>
+                    <p>Collaborative editing market is growing at 12.8% CAGR, with tools like Figma ($20B valuation) proving the value of real-time collaboration features.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: RICE Prioritization -->
+        <div class="slide">
+            <div class="slide-number">4/9</div>
+            <div class="slide-content">
+                <h2>RICE Prioritization</h2>
+                
+                <table class="rice-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Reach</th>
+                            <th>Impact</th>
+                            <th>Confidence</th>
+                            <th>Effort</th>
+                            <th>RICE Score</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Live Cursors & User Presence</strong></td>
+                            <td>80%</td>
+                            <td>3</td>
+                            <td>90%</td>
+                            <td>8</td>
+                            <td class="score-high">27.0</td>
+                            <td>🥇 1st</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Comment Threading System</strong></td>
+                            <td>65%</td>
+                            <td>2</td>
+                            <td>85%</td>
+                            <td>5</td>
+                            <td class="score-high">22.1</td>
+                            <td>🥈 2nd</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Collaborative Sessions Mode</strong></td>
+                            <td>40%</td>
+                            <td>3</td>
+                            <td>70%</td>
+                            <td>13</td>
+                            <td class="score-medium">6.5</td>
+                            <td>🥉 3rd</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Smart Conflict Resolution</strong></td>
+                            <td>30%</td>
+                            <td>2</td>
+                            <td>60%</td>
+                            <td>21</td>
+                            <td class="score-low">1.7</td>
+                            <td>4th</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="highlight">
+                    <h3><span class="animated-icon">🎯</span> Key Insights</h3>
+                    <p><strong>Live Cursors & User Presence</strong> wins due to high reach and immediate impact on user experience, while requiring moderate development effort.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: MoSCoW Framework -->
+        <div class="slide">
+            <div class="slide-number">5/9</div>
+            <div class="slide-content">
+                <h2>MoSCoW Framework</h2>
+                
+                <div class="framework-grid">
+                    <div class="framework-item must-have">
+                        <h3>Must Have</h3>
+                        <p>Live Cursors & User Presence</p>
+                        <small>Core collaboration visibility</small>
+                    </div>
+                    <div class="framework-item should-have">
+                        <h3>Should Have</h3>
+                        <p>Comment Threading System</p>
+                        <small>Organized feedback loops</small>
+                    </div>
+                    <div class="framework-item could-have">
+                        <h3>Could Have</h3>
+                        <p>Collaborative Sessions Mode</p>
+                        <small>Enhanced meeting experience</small>
+                    </div>
+                    <div class="framework-item wont-have">
+                        <h3>Won't Have (MVP)</h3>
+                        <p>Smart Conflict Resolution</p>
+                        <small>Too complex for initial release</small>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <h3><span class="animated-icon">🤔</span> Exclusions Rationale</h3>
+                    <p><strong>Smart Conflict Resolution</strong> was excluded from MVP due to technical complexity and lower user impact relative to development effort. This feature requires sophisticated algorithms and extensive testing, making it better suited for a future iteration.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Kano Framework -->
+        <div class="slide">
+            <div class="slide-number">6/9</div>
+            <div class="slide-content">
+                <h2>Kano Framework Classification</h2>
+                
+                <div class="kano-item">
+                    <h3><span class="animated-icon">⚡</span> Basic (Must-Have)</h3>
+                    <p><strong>Live Cursors & User Presence</strong></p>
+                    <p>Expected functionality in modern collaborative tools. Without it, users experience frustration and consider alternatives like Google Docs or Figma.</p>
+                </div>
+
+                <div class="kano-item">
+                    <h3><span class="animated-icon">📈</span> Performance (Proportional)</h3>
+                    <p><strong>Comment Threading System</strong></p>
+                    <p>More organized comments = higher satisfaction. Users appreciate better feedback organization, and satisfaction increases with feature richness.</p>
+                </div>
+
+                <div class="kano-item">
+                    <h3><span class="animated-icon">✨</span> Delighter (Unexpected)</h3>
+                    <p><strong>Collaborative Sessions Mode</strong></p>
+                    <p>Transforms routine document editing into an engaging, meeting-like experience. Creates "wow" moments and differentiates Notion from competitors.</p>
+                </div>
+
+                <div class="highlight">
+                    <h3><span class="animated-icon">🎯</span> Impact on Differentiation</h3>
+                    <p>This combination moves Notion from "productivity tool" to "collaborative workspace platform," positioning it directly against Figma and Miro in the collaboration space.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: MVP Definition -->
+        <div class="slide">
+            <div class="slide-number">7/9</div>
+            <div class="slide-content">
+                <h2>MVP Definition</h2>
+                
+                <div class="mvp-highlight">
+                    <h3><span class="animated-icon">🚀</span> Core Value Proposition</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600;"><strong>"See, coordinate, and collaborate seamlessly in real-time"</strong></p>
+                </div>
+
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h3><span class="animated-icon">📦</span> MVP Components</h3>
+                        <ul>
+                            <li><strong>Live Cursors:</strong> Real-time cursor tracking with user avatars</li>
+                            <li><strong>User Presence:</strong> Online status and active editing indicators</li>
+                            <li><strong>Basic Comments:</strong> Threaded commenting with notifications</li>
+                            <li><strong>Simple Conflict Prevention:</strong> Edit locking on paragraph level</li>
+                        </ul>
+                    </div>
+                    <div class="tech-card">
+                        <h3><span class="animated-icon">🧪</span> Testing Strategy</h3>
+                        <ul>
+                            <li><strong>Method:</strong> Beta release to 1,000 team customers</li>
+                            <li><strong>Duration:</strong> 6-week controlled trial</li>
+                            <li><strong>Success Metrics:</strong> 40% feature adoption, 25% increase in collaboration sessions</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="highlight">
+                    <h3><span class="animated-icon">📊</span> Learning Objectives</h3>
+                    <p>Validate that real-time collaboration features increase team engagement, reduce edit conflicts by 60%, and improve overall workflow efficiency.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: One Metric That Matters -->
+        <div class="slide">
+            <div class="slide-number">8/9</div>
+            <div class="slide-content">
+                <h2>One Metric That Matters</h2>
+                
+                <div class="metric-box">
+                    <h3><span class="animated-icon">🎯</span> Primary Success Metric</h3>
+                    <div style="font-size: 2.5em; margin: 32px 0; font-weight: 800;">
+                        <strong>Collaborative Sessions per Team per Week</strong>
+                    </div>
+                    <p style="font-size: 1.2rem; opacity: 0.9;">Sessions where 2+ users edit simultaneously for 5+ minutes</p>
+                </div>
+
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h3><span class="animated-icon">📈</span> Why This Metric?</h3>
+                        <ul>
+                            <li><strong>Direct Value Correlation:</strong> Measures actual collaboration, not just presence</li>
+                            <li><strong>User Behavior Change:</strong> Indicates teams shifting from async to sync work</li>
+                            <li><strong>Revenue Impact:</strong> Higher collaboration = higher retention and team growth</li>
+                            <li><strong>Product-Market Fit:</strong> Shows the feature solves real workflow needs</li>
+                        </ul>
+                    </div>
+                    <div class="tech-card">
+                        <div class="highlight">
+                            <h3><span class="animated-icon">🎯</span> Target Goals</h3>
+                            <p><strong>Baseline:</strong> 1.2 sessions/team/week<br>
+                            <strong>Target:</strong> 3.0 sessions/team/week<br>
+                            <span style="color: #00ff7f; font-weight: 600;">(150% increase)</span></p>
+                            <br>
+                            <p><strong>Leading to:</strong> 20% improvement in team retention and 15% increase in seat expansion</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Summary & Next Steps -->
+        <div class="slide">
+            <div class="slide-number">9/9</div>
+            <div class="slide-content">
+                <h2>Summary & Next Steps</h2>
+                
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <h3><span class="animated-icon">🎯</span> Key Insights</h3>
+                        <ul>
+                            <li>$172M annual revenue opportunity</li>
+                            <li>Live cursors provide highest RICE score</li>
+                            <li>MVP focuses on basic collaboration visibility</li>
+                            <li>Success measured by collaborative session frequency</li>
+                        </ul>
+                    </div>
+                    <div class="tech-card">
+                        <h3><span class="animated-icon">⏰</span> Implementation Timeline</h3>
+                        <ul>
+                            <li><strong>Month 1-2:</strong> Live cursors & presence</li>
+                            <li><strong>Month 3:</strong> Comment threading</li>
+                            <li><strong>Month 4:</strong> Beta testing launch</li>
+                            <li><strong>Month 5-6:</strong> Iteration & full rollout</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mvp-highlight" style="margin-top: 48px;">
+                    <h3><span class="animated-icon">🚀</span> Success Criteria</h3>
+                    <p style="font-size: 1.3rem;"><strong>MVP Success:</strong> 40% feature adoption + 3.0 collaborative sessions/team/week<br>
+                    <strong>Business Impact:</strong> 20% retention improvement + 15% seat expansion</p>
+                </div>
+
+                <div class="highlight">
+                    <h3><span class="animated-icon">🔄</span> Next Actions</h3>
+                    <div class="tech-grid" style="margin-top: 24px;">
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px;">
+                            <p>1. Technical feasibility assessment<br>
+                            2. User research validation</p>
+                        </div>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px;">
+                            <p>3. Competitive analysis deep-dive<br>
+                            4. Resource allocation planning</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="thank-you-section">
+                    <h1 class="animated-icon">🙏</h1>
+                    <h2>THANK YOU</h2>
+                    <p style="font-size: 1.3rem; opacity: 0.9; margin-top: 16px;">For your attention and consideration</p>
+                    <div style="margin-top: 32px; padding: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 12px; display: inline-block;">
+                        <p style="font-size: 1.1rem; margin: 0;">Ready to transform collaboration in Notion</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced animations and interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const animatedIcons = document.querySelectorAll('.animated-icon');
+            
+            // Smooth scrolling between slides
+            slides.forEach((slide, index) => {
+                slide.addEventListener('click', function(e) {
+                    if (e.target.closest('.rice-table') || e.target.closest('.tech-card')) return;
+                    
+                    if (index < slides.length - 1) {
+                        slides[index + 1].scrollIntoView({ 
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Enhanced hover effects for cards
+            const techCards = document.querySelectorAll('.tech-card, .framework-item');
+            techCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px) scale(1.02)';
+                    this.style.boxShadow = '0 32px 64px rgba(138, 43, 226, 0.3)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                    this.style.boxShadow = '';
+                });
+            });
+
+            // Parallax effect for background
+            let ticking = false;
+            
+            function updateParallax() {
+                const scrolled = window.pageYOffset;
+                const parallax = document.querySelector('.background::before');
+                
+                if (parallax) {
+                    const yPos = -(scrolled * 0.1);
+                    parallax.style.transform = `translateY(${yPos}px)`;
+                }
+                
+                ticking = false;
+            }
+
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(updateParallax);
+                    ticking = true;
+                }
+            }
+
+            window.addEventListener('scroll', requestTick);
+
+            // Intersection Observer for slide animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            slides.forEach(slide => {
+                observer.observe(slide);
+            });
+
+            // Table row hover effects
+            const tableRows = document.querySelectorAll('.rice-table tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    if (!this.querySelector('th')) {
+                        this.style.background = 'rgba(138, 43, 226, 0.1)';
+                        this.style.transform = 'scale(1.01)';
+                        this.style.transition = 'all 0.2s ease';
+                    }
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    if (!this.querySelector('th')) {
+                        this.style.background = '';
+                        this.style.transform = 'scale(1)';
+                    }
+                });
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown' || e.key === ' ') {
+                    e.preventDefault();
+                    const currentSlide = getCurrentSlide();
+                    if (currentSlide < slides.length - 1) {
+                        slides[currentSlide + 1].scrollIntoView({ behavior: 'smooth' });
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const currentSlide = getCurrentSlide();
+                    if (currentSlide > 0) {
+                        slides[currentSlide - 1].scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+
+            function getCurrentSlide() {
+                const scrollPosition = window.scrollY + window.innerHeight / 2;
+                let currentSlide = 0;
+                
+                slides.forEach((slide, index) => {
+                    const slideTop = slide.offsetTop;
+                    const slideBottom = slideTop + slide.offsetHeight;
+                    
+                    if (scrollPosition >= slideTop && scrollPosition <= slideBottom) {
+                        currentSlide = index;
+                    }
+                });
+                
+                return currentSlide;
+            }
+
+            // Add subtle animations to numbers and metrics
+            const animateNumbers = () => {
+                const numbers = document.querySelectorAll('.score-high, .score-medium, .score-low');
+                numbers.forEach(num => {
+                    num.addEventListener('mouseenter', function() {
+                        this.style.transform = 'scale(1.1)';
+                        this.style.transition = 'transform 0.2s ease';
+                    });
+                    
+                    num.addEventListener('mouseleave', function() {
+                        this.style.transform = 'scale(1)';
+                    });
+                });
+            };
+
+            animateNumbers();
+        });
+    </script>
+</body>
+</html>
