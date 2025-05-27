@@ -179,12 +179,14 @@
             background: linear-gradient(90deg, #ff734f, #8a2be2);
             border-radius: 2px;
         }
+        
         h3 {
             font-size: 1.5rem;
             font-weight: 600;
             margin: 24px 0 16px 0;
             color: #ffffff;
         }
+        
         .problem-box, .solution-box, .opportunity-box, .mvp-highlight, .metric-box {
             padding: 32px;
             border-radius: 16px;
@@ -471,6 +473,55 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* PRINT FIXES */
+    @media print {
+        body, html {
+            background: #fff !important;
+            color: #000 !important;
+        }
+        .background,
+        .animated-icon,
+        .slide-number {
+            display: none !important;
+        }
+        .slide {
+            background: #fff !important;
+            color: #000 !important;
+            box-shadow: none !important;
+            border: none !important;
+            min-height: auto !important;
+            padding: 32px 0 !important;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .page-break {
+            display: block;
+            height: 0;
+            page-break-before: always !important;
+            break-before: page !important;
+        }
+        /* Remove gradients and effects for print clarity */
+        * {
+            background: none !important;
+            box-shadow: none !important;
+            filter: none !important;
+            text-shadow: none !important;
+            color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        /* Remove hover/animation transitions */
+        .tech-card, .framework-item, .score-high, .score-medium, .score-low {
+            transition: none !important;
+            transform: none !important;
+        }
+        /* Ensure tables don't break across pages */
+        table, tr, td, th {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+    }
     </style>
 </head>
 <body>
